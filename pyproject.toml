@@ -1,0 +1,9 @@
+[project]
+name = "ethical-ai-game"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "pygame>=2.6.1",
+    "pygame-ce>=2.5.7",
+]

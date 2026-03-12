@@ -1,0 +1,26 @@
+{
+  "rounds": [
+    {
+      "round_number": 1,
+      "timer_seconds": 15,
+      "description": "Suspect in dark clothing, appears nervous",
+      "people": [
+        "MARCUS REID",
+        "ELENA VOSS",
+        "JAMES OKAFOR",
+        "SARAH CHEN",
+        "DMITRI VOLKOV",
+        "AMIRA HASSAN"
+      ],
+      "suspect_name": "MARCUS REID",
+      "reveals": {
+        "MARCUS REID": "Was checking his phone for directions to a job interview",
+        "ELENA VOSS": "Browsing shop windows on her lunch break",
+        "JAMES OKAFOR": "Waiting for his daughter outside her school",
+        "SARAH CHEN": "Walking home from the grocery store",
+        "DMITRI VOLKOV": "On a heated phone call with his landlord",
+        "AMIRA HASSAN": "Texting a friend about dinner plans"
+      }
+    }
+  ]
+}
