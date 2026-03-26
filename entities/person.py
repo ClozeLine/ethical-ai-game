@@ -46,21 +46,35 @@ class Person:
         self.color = color
 
         self.speed = random.uniform(PERSON_SPEED_MIN, PERSON_SPEED_MAX)
-        self.vx = self.speed * random.choice((-1, 1))
+        self.vx: float = 0.0  # signed velocity; set by game loop before first frame
+        self._direction_sign: int = 0  # set by set_direction(); 0 = not yet assigned
 
         self.attributes: dict = attributes or {}
-        self.is_suspect: bool = False
         self.is_flagged: bool = False
 
         # Animation state
         self._anim_dist: float = 0.0
         self._anim_frame: int = 0  # 0 = standing, 1 = stride
-        self._facing_right: bool = self.vx >= 0
+        self._facing_right: bool = True
         self._sprites: list[pygame.Surface] | None = None
 
     @property
     def name(self) -> str:
         return self.attributes.get("name", "")
+
+    def set_direction(self, sign: int):
+        """Set horizontal direction: -1 for left, +1 for right."""
+        self._direction_sign = sign
+        self.vx = self.speed * sign
+        self._facing_right = sign > 0
+
+    def freeze(self):
+        """Stop movement (preserves stored direction for later unfreeze)."""
+        self.vx = 0.0
+
+    def unfreeze(self):
+        """Restore movement from stored direction and speed."""
+        self.vx = self.speed * self._direction_sign
 
     def build_sprite(self):
         """Pre-render 4 sprite surfaces: [A_right, A_left, B_right, B_left]."""

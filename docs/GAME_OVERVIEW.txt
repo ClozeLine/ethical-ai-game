@@ -1,0 +1,280 @@
+RED HANDED — GAME OVERVIEW
+==========================
+
+
+WHAT IS RED HANDED?
+-------------------
+
+Red Handed is a single-player surveillance game built with Python and pygame-ce.
+You play as a CCTV operator tasked with identifying a suspect from a crowd of
+people walking across your screen. The game is designed for an AI Ethics course
+to demonstrate a specific and often-overlooked problem: even when AI-generated
+data is completely accurate, the system surrounding it can still produce biased
+human decisions.
+
+The game does not contain a biased AI. The bias comes from you — the player —
+and the conditions the game deliberately places you under.
+
+
+THE ETHICAL DILEMMA
+-------------------
+
+The Core Argument
+
+Public discourse around AI surveillance often focuses on whether the AI itself
+is biased — whether facial recognition misidentifies people of certain
+ethnicities, whether mood detection is accurate, whether behavioural flags are
+reliable. Red Handed sidesteps this debate entirely by making a different, more
+unsettling claim:
+
+  Even if the AI is perfectly accurate, the human decision layer can still
+  produce systematically biased outcomes.
+
+
+How the Game Demonstrates This
+
+Each person on screen carries a set of AI-generated data tags — their mood,
+their behaviour, and a physical descriptor. This data is truthful. A person
+labelled "anxious" genuinely is anxious. A person labelled "pacing" genuinely
+is pacing. The AI is not lying.
+
+But the player receives a vague suspect description (e.g., "dark clothing,
+appears nervous") and has a limited timer to pick someone. Under time pressure,
+the player cannot carefully cross-reference every tag. Instead, they rely on
+mental shortcuts: they flag the person who looks most suspicious based on
+superficial pattern-matching — clothing colour, mood labels, movement speed.
+
+The result: the player flags innocent people who happened to share surface-level
+traits with the suspect. The game's recap screen (planned) then reveals the true
+context behind each person's behaviour:
+
+  - The "nervous" man was checking his phone for directions to a job interview.
+  - The "loitering" man was waiting for his daughter outside her school.
+  - The "agitated" man was on a heated phone call with his landlord.
+
+The data was correct. The player's decision was wrong. And the system — with its
+time pressure, vague descriptions, and overwhelming information — is what made
+the wrong decision feel rational in the moment.
+
+
+Why This Matters
+
+This mirrors real-world AI-assisted surveillance. Operators in CCTV control
+rooms receive flagged individuals from automated systems and must make quick
+decisions about whether to escalate. The conditions — shift fatigue, time
+pressure, ambiguous alerts — mean that even accurate AI outputs get filtered
+through human cognitive biases (confirmation bias, racial profiling, anchoring
+on salient features). The system's design, not individual malice, produces the
+bias.
+
+Red Handed makes this argument experiential rather than theoretical. You don't
+read about bias — you commit it, and then you see the consequences.
+
+
+SCOPE
+-----
+
+What Is Built (Current State)
+
+The game currently implements a single-round prototype with the following:
+
+  CCTV surveillance view
+    A 1280x720 window styled to look like a real CCTV monitor, complete with
+    scanline overlay, vignette darkening at edges, random pixel noise, and a
+    live timestamp reading "CAM 01" with the current date/time.
+
+  Animated pixel-art people
+    6 characters walk horizontally across the screen. Each is a 10x17 pixel
+    sprite (scaled 3x) with deterministic appearance — skin tone, hair colour,
+    clothing colour, and optional hat are derived from the character's name via
+    a hash function. Characters have a two-frame walking animation and wrap
+    around when they leave the screen edge.
+
+  Info cards
+    Each person has a permanently visible data card floating beside them showing
+    their name, age, mood, and behaviour (e.g., NAME: MARCUS REID / AGE: 34 /
+    MOOD: Nervous / BEHAVIOR: Pacing). These are styled in green monospace text
+    on a dark translucent background, matching the CCTV aesthetic.
+
+  Dispatch panel
+    A panel in the top-left corner shows a "dispatch" message describing the
+    suspect (e.g., "Suspect in dark clothing, appears nervous"). It also
+    contains a countdown timer bar that drains from full to empty, turning red
+    when below 25%.
+
+  Click-to-flag mechanic
+    During the playing phase, clicking on a person flags them as your suspect.
+    They freeze in place, a red outline appears around them, and the panel
+    displays "SUSPECT FLAGGED". If the timer runs out before you click, the
+    panel shows "TIME EXPIRED".
+
+  State machine
+    The round progresses through four states:
+      BRIEFING  — 3-second delay while you read the dispatch
+      PLAYING   — timer counting down, clicks active
+      FLAGGED   — round over, someone selected
+      TIME_UP   — round over, no selection made
+
+
+What Is Planned (Not Yet Built)
+
+  - 5 rounds with escalating difficulty: timer decreases from 15s to 4s across
+    rounds. Number of people increases from 5 to 8. Ambiguity increases — early
+    rounds have one clear match, later rounds have multiple plausible matches
+    and misleading data.
+
+  - Recap screen: after all rounds, a screen reveals every person the player
+    flagged, whether they were the true suspect or innocent, and the real-world
+    context behind each AI signal. This is the game's core payoff — the moment
+    the player confronts the consequences of their decisions.
+
+  - False positive tracking: the game records which signals the player acted on
+    and calculates their false positive rate.
+
+  - Multi-round flow: transitioning between rounds, accumulating player choices
+    across the full game.
+
+
+GAME MECHANICS
+--------------
+
+Round Flow
+
+  BRIEFING (3s)           PLAYING (countdown)         OUTCOME
+    |                       |                            |
+    |  Dispatch panel       |  Timer bar drains          |  FLAGGED: person selected
+    |  appears with         |  People walk across        |      — or —
+    |  suspect description  |  screen with info cards    |  TIME_UP: no selection
+    |                       |  Player clicks to flag     |
+
+  1. Briefing phase: The dispatch panel appears with a suspect description.
+     The player has 3 seconds to read it before the timer starts. People are
+     already visible and walking.
+
+  2. Playing phase: The countdown timer begins. People continue walking across
+     the screen. The player must click on the person they believe matches the
+     suspect description. Each person's info card (name, age, mood, behaviour)
+     is always visible.
+
+  3. Outcome: Either the player clicks someone (FLAGGED) or the timer expires
+     (TIME_UP). In either case, the round ends.
+
+
+What the Player Sees
+
+The entire interface is designed to look like a CCTV monitoring station:
+
+  - Dark background with green monospace text (the "terminal" aesthetic)
+  - Scanlines — thin horizontal lines overlaid on the entire screen, simulating
+    a CRT monitor
+  - Vignette — darkened edges, drawing focus to the centre
+  - Random noise — flickering white pixels, simulating camera static
+  - Timestamp — "CAM 01" and the current date/time in the top-right corner
+  - Pixel-art characters — small, deliberately low-resolution figures that make
+    it harder to distinguish people at a glance (reinforcing the surveillance
+    theme: you're making decisions about real people from degraded, impersonal
+    footage)
+
+
+What the Player Knows
+
+For each person on screen, the player can see:
+
+  Data point           Example          Source
+  ---------            -------          ------
+  Name                 MARCUS REID      Always visible on info card
+  Age                  34               Always visible on info card
+  Mood                 Nervous          AI-generated, accurate
+  Behaviour            Pacing           AI-generated, accurate
+  Clothing colour      Visible on sprite  Derived from character data
+  Movement direction   Visible on screen  Random per character
+
+The player also receives a dispatch description — a short, deliberately vague
+description of the suspect (e.g., "Suspect in dark clothing, appears nervous").
+
+
+What the Player Does NOT Know
+
+  - Why someone is nervous, pacing, or agitated. The mood/behaviour data is
+    accurate but context-free.
+  - Which traits are relevant to the suspect description and which are
+    coincidental.
+  - Under time pressure, the player cannot carefully evaluate all characters and
+    must rely on quick pattern-matching — which is where bias enters.
+
+
+Character System
+
+The game has a pool of 8 possible characters:
+
+  Name              Age   Clothing          Mood         Behaviour
+  ----              ---   --------          ----         ---------
+  Marcus Reid       34    Black hoodie      Nervous      Pacing
+  Elena Voss        28    Red jacket        Calm         Browsing
+  James Okafor      41    Green parka       Anxious      Loitering
+  Sarah Chen        25    Yellow raincoat   Cheerful     Walking
+  Dmitri Volkov     37    Purple vest       Agitated     Arguing
+  Amira Hassan      30    Orange scarf      Distracted   Texting
+  Lucas Ortega      22    Cyan tracksuit    Relaxed      Sitting
+  Nadia Petrov      45    White blouse      Focused      Watching
+
+Each character's visual appearance (skin tone, hair colour, hat) is
+deterministically generated from their name — meaning they look consistent
+across rounds but the player cannot control or predict their appearance.
+
+Each round selects a subset of these characters and designates one as the true
+suspect. The dispatch description is written to match the suspect but also
+partially overlap with innocent bystanders.
+
+
+Reveal Data (Per Character, Per Round)
+
+Each character in a round has a hidden "reveal" — the true context behind their
+behaviour. For example, in Round 1:
+
+  Marcus Reid (the suspect):
+    "Was checking his phone for directions to a job interview"
+
+  Elena Voss:
+    "Browsing shop windows on her lunch break"
+
+  James Okafor:
+    "Waiting for his daughter outside her school"
+
+  Sarah Chen:
+    "Walking home from the grocery store"
+
+  Dmitri Volkov:
+    "On a heated phone call with his landlord"
+
+  Amira Hassan:
+    "Texting a friend about dinner plans"
+
+These reveals are not shown during gameplay — they are reserved for the
+post-game recap screen, where they serve as the game's ethical punchline.
+
+
+TECHNICAL DETAILS
+-----------------
+
+  Engine:       pygame-ce (community edition of pygame)
+  Language:     Python 3.12
+  Resolution:   1280x720, 60 FPS
+  Sprites:      Hand-crafted 10x17 pixel templates defined in code, scaled 3x
+                at runtime. Two animation frames (standing and stride) with
+                horizontal flipping for direction.
+  Data:         Round definitions stored in data/rounds.json. Character
+                templates defined in game/constants.py.
+  Assets:       No external assets required. All visuals are generated
+                programmatically (sprites, overlays, UI). An optional bg.png
+                background image is loaded if present.
+
+
+SUMMARY
+-------
+
+Red Handed is not a game about catching criminals. It is a game about
+discovering that you — placed in the role of a surveillance operator, given
+accurate but context-free AI data, and forced to act under time pressure — will
+make biased decisions. The game's design ensures this outcome. The bias is not a
+bug in the AI. It is a feature of the system.

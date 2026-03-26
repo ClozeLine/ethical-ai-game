@@ -26,6 +26,8 @@ PERSON_COLORS = [
     (200, 130, 50),   # orange
     (80, 200, 200),   # cyan
     (200, 200, 200),  # white
+    (139, 90, 43),    # brown
+    (189, 183, 107),  # khaki
 ]
 SPRITE_SCALE = 3
 SPRITE_ANIM_STRIDE = 12.0
@@ -40,14 +42,16 @@ CARD_BORDER_COLOR = (0, 200, 0)
 CARD_FONT_SIZE = 13
 
 PERSON_TEMPLATE_DATA = [
-    {"name": "MARCUS REID", "age": "34", "clothing": "Black hoodie", "mood": "Nervous", "behavior": "Pacing"},
-    {"name": "ELENA VOSS", "age": "28", "clothing": "Red jacket", "mood": "Calm", "behavior": "Browsing"},
-    {"name": "JAMES OKAFOR", "age": "41", "clothing": "Green parka", "mood": "Anxious", "behavior": "Loitering"},
-    {"name": "SARAH CHEN", "age": "25", "clothing": "Yellow raincoat", "mood": "Cheerful", "behavior": "Walking"},
-    {"name": "DMITRI VOLKOV", "age": "37", "clothing": "Purple vest", "mood": "Agitated", "behavior": "Arguing"},
-    {"name": "AMIRA HASSAN", "age": "30", "clothing": "Orange scarf", "mood": "Distracted", "behavior": "Texting"},
-    {"name": "LUCAS ORTEGA", "age": "22", "clothing": "Cyan tracksuit", "mood": "Relaxed", "behavior": "Sitting"},
-    {"name": "NADIA PETROV", "age": "45", "clothing": "White blouse", "mood": "Focused", "behavior": "Watching"},
+    {"name": "DREW VALE", "age": "31", "clothing": "Black jacket", "mood": "Nervous", "behavior": "Pacing"},
+    {"name": "RILEY STONE", "age": "27", "clothing": "Red hoodie", "mood": "Anxious", "behavior": "Looking around"},
+    {"name": "ROBIN SAGE", "age": "36", "clothing": "Blue coat", "mood": "Calm", "behavior": "Walking"},
+    {"name": "CASEY WARD", "age": "42", "clothing": "Green parka", "mood": "Distracted", "behavior": "Texting"},
+    {"name": "RIVER BANKS", "age": "24", "clothing": "Yellow vest", "mood": "Cheerful", "behavior": "Browsing"},
+    {"name": "MORGAN LAKE", "age": "38", "clothing": "Grey sweatshirt", "mood": "Tense", "behavior": "Standing still"},
+    {"name": "SAM BRIDGE", "age": "29", "clothing": "Purple jacket", "mood": "Agitated", "behavior": "Arguing"},
+    {"name": "CASS MOORE", "age": "44", "clothing": "Orange hoodie", "mood": "Focused", "behavior": "Watching"},
+    {"name": "AVERY MARSH", "age": "33", "clothing": "White shirt", "mood": "Relaxed", "behavior": "Sitting"},
+    {"name": "JORDAN COLE", "age": "26", "clothing": "Cyan tracksuit", "mood": "Restless", "behavior": "Fidgeting"},
 ]
 
 # Sprite color pools
@@ -111,9 +115,32 @@ TIMER_BAR_WARNING_COLOR = (200, 40, 40)
 TIMER_BAR_BG_COLOR = (40, 40, 45)
 TIMER_TEXT_COLOR = (0, 200, 0)
 
+# People per round
+NUM_PEOPLE = 10
+
 # Briefing
 BRIEFING_DURATION = 3.0
 
 # Flag outline
 FLAG_OUTLINE_COLOR = (220, 40, 40)
 FLAG_OUTLINE_WIDTH = 3
+FLAG_BLINK_RATE = 4.0  # blinks per second during ROUND_END
+
+# Click hitbox padding (pixels added per side beyond the sprite rect)
+CLICK_HITBOX_PADDING = 10
+
+# Round transition
+ROUND_END_PAUSE = 2.0
+
+# Stats/Recap screen
+STATS_BG_COLOR = (10, 10, 15, 230)
+STATS_MARGIN_X = 40
+STATS_MARGIN_TOP = 30
+STATS_REVEAL_COLOR = (0, 180, 0)
+STATS_DIM_COLOR = (0, 160, 0)
+STATS_PROMPT_COLOR = (0, 120, 0)
+
+# Fired screen
+FIRED_HEADER_COLOR = (200, 40, 40)
+FIRED_TEXT_COLOR = (180, 60, 60)
+FIRED_DIM_COLOR = (140, 50, 50)
