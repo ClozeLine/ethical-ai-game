@@ -1,6 +1,5 @@
 import os
 import random
-import textwrap
 from datetime import datetime
 from math import ceil, sqrt
 
@@ -19,6 +18,10 @@ from game.constants import (
     FLAG_OUTLINE_COLOR,
     FLAG_OUTLINE_WIDTH,
     FPS,
+    MENU_BLUR_FACTOR,
+    MENU_BUTTON_COLOR,
+    MENU_OVERLAY_ALPHA,
+    MENU_TITLE_FONT_SIZE,
     NOISE_ALPHA,
     NOISE_PIXELS_PER_FRAME,
     NUM_PEOPLE,
@@ -71,6 +74,8 @@ class Game:
         self.font = pygame.font.SysFont("couriernew", TIMESTAMP_FONT_SIZE)
         self.card_font = pygame.font.SysFont("couriernew", CARD_FONT_SIZE)
         self.panel_font = pygame.font.SysFont("couriernew", PANEL_FONT_SIZE)
+        self.panel_font_bold = pygame.font.SysFont("couriernew", PANEL_FONT_SIZE, bold=True)
+        self.title_font = pygame.font.SysFont("couriernew", MENU_TITLE_FONT_SIZE, bold=True)
 
         # Load round data
         self.all_rounds = load_rounds()
@@ -88,12 +93,11 @@ class Game:
             f"({len(PERSON_TEMPLATE_DATA)})"
         )
 
-        # Set up people from round definition
+        # People list (used for both menu bg and gameplay)
         self.people: list[Person] = []
-        self._setup_people_for_round(self.round_def)
 
         # State machine
-        self.state = GameState.BRIEFING
+        self.state = GameState.MENU
         self.briefing_timer: float = 0.0
         self.round_timer: float = self.round_def.timer_seconds
         self.selected_person: Person | None = None
@@ -108,12 +112,110 @@ class Game:
         self._noise_pool = self._make_noise_pool()
         self._noise_index = 0
 
-        # Pre-render dispatch panel
+        # Pre-render dispatch panel (will be rebuilt on _start_game)
         self._panel_surf = self._build_panel()
 
         # End screen (built when GAME_OVER is reached — stats or fired)
         self._stats_surf: pygame.Surface | None = None
         self._was_fired: bool = False
+
+        # Menu setup
+        self._setup_menu_people()
+        self._menu_blur_surf = self._build_menu_blur()
+        self._menu_scene_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self._menu_overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        self._menu_overlay.fill((0, 0, 0, MENU_OVERLAY_ALPHA))
+
+        # Play button rect (computed once, used for click detection)
+        btn_text = self.panel_font_bold.render("[ PLAY ]", True, MENU_BUTTON_COLOR)
+        btn_w = btn_text.get_width() + 40
+        btn_h = btn_text.get_height() + 20
+        self._play_btn_rect = pygame.Rect(
+            (SCREEN_WIDTH - btn_w) // 2,
+            SCREEN_HEIGHT // 2 + 30,
+            btn_w, btn_h,
+        )
+
+    # --- menu ---
+
+    def _setup_menu_people(self):
+        """Create all 10 people walking around for the menu background."""
+        self.people = []
+        for color, tmpl in zip(PERSON_COLORS, PERSON_TEMPLATE_DATA):
+            person = Person(color, dict(tmpl))
+            person.build_sprite()
+            self.people.append(person)
+        self._distribute_positions(self.people)
+        self._balance_directions(self.people)
+
+    def _build_menu_blur(self) -> pygame.Surface:
+        """Create a blurred version of the background for the menu."""
+        if self._bg:
+            small = pygame.transform.smoothscale(
+                self._bg,
+                (SCREEN_WIDTH // MENU_BLUR_FACTOR, SCREEN_HEIGHT // MENU_BLUR_FACTOR),
+            )
+            blurred = pygame.transform.smoothscale(small, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        else:
+            blurred = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            blurred.fill(BG_COLOR)
+        return blurred
+
+    def _draw_menu(self):
+        """Draw the menu screen: blurred bg+people, overlays, title, play button."""
+        # Render background + people to a temp surface, then blur the whole thing
+        scene = self._menu_scene_surf
+        scene.blit(self._menu_blur_surf, (0, 0))
+        for person in self.people:
+            person.draw(scene)
+
+        # Blur: downscale then upscale
+        small = pygame.transform.smoothscale(
+            scene,
+            (SCREEN_WIDTH // MENU_BLUR_FACTOR, SCREEN_HEIGHT // MENU_BLUR_FACTOR),
+        )
+        blurred = pygame.transform.smoothscale(small, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.screen.blit(blurred, (0, 0))
+
+        # CCTV overlays
+        self.screen.blit(self._scanline_surf, (0, 0))
+        self.screen.blit(self._vignette_surf, (0, 0))
+        self._draw_noise()
+
+        # Dark overlay to dim the scene
+        self.screen.blit(self._menu_overlay, (0, 0))
+
+        # Title
+        title_surf = self.title_font.render("RED HANDED", True, MENU_BUTTON_COLOR)
+        self.screen.blit(
+            title_surf,
+            ((SCREEN_WIDTH - title_surf.get_width()) // 2, SCREEN_HEIGHT // 2 - 60),
+        )
+
+        # Play button
+        r = self._play_btn_rect
+        pygame.draw.rect(self.screen, MENU_BUTTON_COLOR, r, 2)
+        btn_text = self.panel_font_bold.render("[ PLAY ]", True, MENU_BUTTON_COLOR)
+        self.screen.blit(
+            btn_text,
+            (r.x + (r.w - btn_text.get_width()) // 2, r.y + (r.h - btn_text.get_height()) // 2),
+        )
+
+    def _start_game(self):
+        """Reset all game state and begin from round 1."""
+        self.current_round_index = 0
+        self.round_def = self.all_rounds[0]
+        self.round_results = []
+        self._deselect_current()
+        self._setup_people_for_round(self.round_def)
+        self._panel_surf = self._build_panel()
+        self.briefing_timer = 0.0
+        self.round_timer = self.round_def.timer_seconds
+        self._stats_surf = None
+        self._was_fired = False
+        self.state = GameState.BRIEFING
+
+    # --- people setup ---
 
     def _setup_people_for_round(self, round_def: RoundDef):
         # Build a lookup from name → (color, template)
@@ -203,24 +305,111 @@ class Game:
 
     # --- panel ---
 
+    @staticmethod
+    def _parse_bold_segments(text: str) -> list[tuple[str, bool]]:
+        """Parse **bold** markup into (text, is_bold) segments."""
+        segments: list[tuple[str, bool]] = []
+        while "**" in text:
+            before, _, rest = text.partition("**")
+            if before:
+                segments.append((before, False))
+            if "**" in rest:
+                bold_text, _, text = rest.partition("**")
+                if bold_text:
+                    segments.append((bold_text, True))
+            else:
+                # Unmatched ** — treat rest as normal
+                text = rest
+        if text:
+            segments.append((text, False))
+        return segments
+
+    def _wrap_and_render_rich(
+        self, text: str, max_width: int, color: tuple
+    ) -> list[pygame.Surface]:
+        """Word-wrap text with **bold** markup and return one surface per line."""
+        segments = self._parse_bold_segments(text)
+        # Flatten into (word, is_bold) pairs, preserving spaces
+        words: list[tuple[str, bool]] = []
+        for seg_text, is_bold in segments:
+            parts = seg_text.split(" ")
+            for i, part in enumerate(parts):
+                if i > 0:
+                    words.append((" ", False))
+                if part:
+                    words.append((part, is_bold))
+
+        # Build lines of (word, is_bold) that fit within max_width
+        lines: list[list[tuple[str, bool]]] = [[]]
+        line_w = 0
+        space_w = self.panel_font.size(" ")[0]
+        for word, is_bold in words:
+            if word == " ":
+                continue  # handled by spacing between words
+            font = self.panel_font_bold if is_bold else self.panel_font
+            w = font.size(word)[0]
+            needed = (space_w + w) if line_w > 0 else w
+            if line_w + needed > max_width and line_w > 0:
+                lines.append([])
+                line_w = 0
+                needed = w
+            if line_w > 0:
+                lines[-1].append((" ", False))
+            lines[-1].append((word, is_bold))
+            line_w += needed
+
+        # Render each line into a surface
+        line_h = max(self.panel_font.get_height(), self.panel_font_bold.get_height())
+        rendered_lines: list[pygame.Surface] = []
+        for line_parts in lines:
+            # Measure total width
+            total_w = 0
+            for part, is_bold in line_parts:
+                font = self.panel_font_bold if is_bold else self.panel_font
+                total_w += font.size(part)[0]
+            line_surf = pygame.Surface((max(total_w, 1), line_h), pygame.SRCALPHA)
+            x = 0
+            for part, is_bold in line_parts:
+                font = self.panel_font_bold if is_bold else self.panel_font
+                rendered = font.render(part, True, color)
+                line_surf.blit(rendered, (x, 0))
+                x += rendered.get_width()
+            rendered_lines.append(line_surf)
+        return rendered_lines
+
     def _build_panel(self) -> pygame.Surface:
-        surf = pygame.Surface((PANEL_WIDTH, PANEL_HEIGHT), pygame.SRCALPHA)
+        # Measure content height first
+        header = self.panel_font.render(">> DISPATCH <<", True, PANEL_HEADER_COLOR)
+        text_y = 8 + header.get_height() + 6
+        text_max_w = PANEL_WIDTH - 20
+        desc_lines = self._wrap_and_render_rich(
+            self.round_def.description, text_max_w, PANEL_TEXT_COLOR
+        )
+        content_bottom = text_y
+        for line_surf in desc_lines:
+            content_bottom += line_surf.get_height() + 2
+
+        # Panel height: content + gap + timer bar + gap + status text + padding
+        status_h = self.panel_font.get_height()
+        panel_h = content_bottom + 8 + TIMER_BAR_HEIGHT + 4 + status_h + 6
+        self._panel_height = panel_h
+
+        surf = pygame.Surface((PANEL_WIDTH, panel_h), pygame.SRCALPHA)
         surf.fill(PANEL_BG_COLOR)
-        pygame.draw.rect(surf, PANEL_BORDER_COLOR, (0, 0, PANEL_WIDTH, PANEL_HEIGHT), 1)
+        pygame.draw.rect(surf, PANEL_BORDER_COLOR, (0, 0, PANEL_WIDTH, panel_h), 1)
 
         # Header
-        header = self.panel_font.render(">> DISPATCH <<", True, PANEL_HEADER_COLOR)
         header_x = (PANEL_WIDTH - header.get_width()) // 2
         surf.blit(header, (header_x, 8))
 
-        # Word-wrap the description
-        max_chars = (PANEL_WIDTH - 20) // (self.panel_font.size("A")[0])
-        wrapped = textwrap.wrap(self.round_def.description, width=max_chars)
-        y = 8 + header.get_height() + 6
-        for line in wrapped:
-            rendered = self.panel_font.render(line, True, PANEL_TEXT_COLOR)
-            surf.blit(rendered, (10, y))
-            y += rendered.get_height() + 2
+        # Description lines with bold rendering
+        y = text_y
+        for line_surf in desc_lines:
+            surf.blit(line_surf, (10, y))
+            y += line_surf.get_height() + 2
+
+        # Store where text ends so timer bar can be placed below
+        self._panel_text_bottom = y
 
         return surf
 
@@ -228,10 +417,9 @@ class Game:
         px, py = PANEL_MARGIN, PANEL_MARGIN
         self.screen.blit(self._panel_surf, (px, py))
 
-        # Timer bar area: below the static panel content
-        bar_y = py + PANEL_HEIGHT - TIMER_BAR_HEIGHT - 24
+        # Timer bar: positioned below the description text
+        bar_y = py + self._panel_text_bottom + 8
         bar_x = px + 10
-        # Reserve space for timer text inside the panel
         timer_text_w = 60
         bar_w = PANEL_WIDTH - 20 - timer_text_w - 6
 
@@ -251,7 +439,7 @@ class Game:
         if fill_w > 0:
             pygame.draw.rect(self.screen, bar_color, (bar_x, bar_y, fill_w, TIMER_BAR_HEIGHT))
 
-        # Timer text (inside panel bounds, right of bar)
+        # Timer text (right of bar)
         if self.state == GameState.BRIEFING:
             time_text = f"{self.round_def.timer_seconds:.1f}s"
         elif self.state in (GameState.ROUND_END, GameState.GAME_OVER):
@@ -262,8 +450,7 @@ class Game:
         timer_surf = self.panel_font.render(time_text, True, text_color)
         self.screen.blit(timer_surf, (bar_x + bar_w + 6, bar_y - 2))
 
-        # Status text (only during ROUND_END; GAME_OVER uses the stats screen)
-        panel_bottom = py + PANEL_HEIGHT
+        # Status text (only during ROUND_END)
         status = None
         if self.state == GameState.ROUND_END and self.round_results:
             last = self.round_results[-1]
@@ -275,7 +462,7 @@ class Game:
         if status:
             status_surf = self.panel_font.render(status, True, PANEL_HEADER_COLOR)
             sx = px + (PANEL_WIDTH - status_surf.get_width()) // 2
-            sy = min(bar_y + TIMER_BAR_HEIGHT + 4, panel_bottom - status_surf.get_height() - 2)
+            sy = bar_y + TIMER_BAR_HEIGHT + 4
             self.screen.blit(status_surf, (sx, sy))
 
     # --- stats/recap screen ---
@@ -324,7 +511,7 @@ class Game:
             char_w = self.panel_font.size("A")[0]
             prefix_px = self.panel_font.size(prefix)[0] + self.panel_font.size(suffix)[0]
             max_desc_chars = (SCREEN_WIDTH - 2 * x - prefix_px) // char_w
-            desc = rd.description
+            desc = rd.description.replace("**", "")
             if len(desc) > max_desc_chars:
                 desc = desc[:max_desc_chars - 3] + "..."
 
@@ -351,13 +538,21 @@ class Game:
             surf.blit(flag_surf, (x, y))
             y += flag_surf.get_height() + 2
 
-            # Reveal line (only if someone was flagged)
-            if result.flagged_name is not None:
+            # Reveal line (only for falsely accused — not matched dispatch)
+            if result.flagged_name is not None and not result.was_plausible:
                 reveal_prefix = "  > "
                 if result.flagged_name in rd.reveals:
                     reveal_payload = rd.reveals[result.flagged_name]
                 else:
-                    reveal_payload = "No additional information on file."
+                    # Padded person with no reveal entry — generate from template
+                    tmpl = next(
+                        (t for t in PERSON_TEMPLATE_DATA if t["name"] == result.flagged_name),
+                        None,
+                    )
+                    if tmpl:
+                        reveal_payload = f"Was just {tmpl['behavior'].lower()} nearby — not involved in any incident."
+                    else:
+                        reveal_payload = "No additional information on file."
                 reveal_text = reveal_prefix + reveal_payload
                 # Truncate if needed
                 prefix_chars = len(reveal_prefix)
@@ -374,18 +569,11 @@ class Game:
         pygame.draw.line(surf, PANEL_TEXT_COLOR, (x, y), (SCREEN_WIDTH - x, y))
         y += 14
 
-        # Closing message
-        closing = self.panel_font.render(
-            "EVERY PERSON YOU SAW WAS INNOCENT.", True, PANEL_HEADER_COLOR
-        )
-        surf.blit(closing, ((SCREEN_WIDTH - closing.get_width()) // 2, y))
-        y += closing.get_height() + 10
-
         # Explanation lines
         explanation = [
-            "The data was accurate. The descriptions were vague.",
-            "You had seconds to decide. The bias was not in the",
-            "system -- it was in the decision.",
+            "You had seconds to decide who satisfies the dispatch.",
+            "The descriptions matched several people. None were guilty.",
+            "The bias was not in the system -- it was in the decision.",
         ]
         for line in explanation:
             rendered = self.panel_font.render(line, True, STATS_DIM_COLOR)
@@ -394,9 +582,14 @@ class Game:
 
         y += 16
 
-        # Exit prompt
-        prompt = self.panel_font.render("[ ESC TO EXIT ]", True, STATS_PROMPT_COLOR)
-        surf.blit(prompt, ((SCREEN_WIDTH - prompt.get_width()) // 2, y))
+        # Prompts
+        restart = self.panel_font.render("[ ENTER TO RESTART ]", True, STATS_PROMPT_COLOR)
+        exit_p = self.panel_font.render("[ ESC TO EXIT ]", True, STATS_PROMPT_COLOR)
+        gap = 20
+        total_w = restart.get_width() + gap + exit_p.get_width()
+        start_x = (SCREEN_WIDTH - total_w) // 2
+        surf.blit(restart, (start_x, y))
+        surf.blit(exit_p, (start_x + restart.get_width() + gap, y))
 
         return surf
 
@@ -439,9 +632,14 @@ class Game:
         pygame.draw.line(surf, FIRED_HEADER_COLOR, (x, y), (SCREEN_WIDTH - x, y))
         y += 20
 
-        # Exit prompt
-        prompt = self.panel_font.render("[ ESC TO EXIT ]", True, FIRED_DIM_COLOR)
-        surf.blit(prompt, (cx - prompt.get_width() // 2, y))
+        # Prompts
+        restart = self.panel_font.render("[ ENTER TO RESTART ]", True, FIRED_DIM_COLOR)
+        exit_p = self.panel_font.render("[ ESC TO EXIT ]", True, FIRED_DIM_COLOR)
+        gap = 20
+        total_w = restart.get_width() + gap + exit_p.get_width()
+        start_x = (SCREEN_WIDTH - total_w) // 2
+        surf.blit(restart, (start_x, y))
+        surf.blit(exit_p, (start_x + restart.get_width() + gap, y))
 
         return surf
 
@@ -576,10 +774,22 @@ class Game:
                     self.running = False
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    self._handle_click(event.pos)
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    self._handle_confirm()
+                elif self.state == GameState.MENU:
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                        self._start_game()
+                    elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        if self._play_btn_rect.collidepoint(event.pos):
+                            self._start_game()
+                elif self.state == GameState.GAME_OVER:
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                        self._setup_menu_people()
+                        self._stats_surf = None
+                        self.state = GameState.MENU
+                elif self.state == GameState.PLAYING:
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        self._handle_click(event.pos)
+                    elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                        self._handle_confirm()
 
             # State updates
             if self.state == GameState.BRIEFING:
@@ -601,26 +811,42 @@ class Game:
                         self.state = GameState.ROUND_END
                         self._round_end_timer = 0.0
                     else:
-                        # No one selected — you're fired
+                        # No one selected
                         self._deselect_current()
-                        self._was_fired = True
-                        self.state = GameState.GAME_OVER
-                        self._stats_surf = self._build_fired_surface()
+                        if self.current_round_index == 0:
+                            # Tutorial round — auto-advance instead of firing
+                            self.round_results.append(RoundResult(
+                                round_number=self.round_def.round_number,
+                                flagged_name=None,
+                                was_plausible=None,
+                                time_remaining=0.0,
+                            ))
+                            self.state = GameState.ROUND_END
+                            self._round_end_timer = 0.0
+                        else:
+                            self._was_fired = True
+                            self.state = GameState.GAME_OVER
+                            self._stats_surf = self._build_fired_surface()
             elif self.state == GameState.ROUND_END:
                 self._round_end_timer += dt
                 if self._round_end_timer >= ROUND_END_PAUSE:
                     self._advance_round()
 
-            # People walk (except in GAME_OVER)
-            if self.state != GameState.GAME_OVER:
+            # People walk (menu and gameplay, not GAME_OVER)
+            if self.state not in (GameState.GAME_OVER,):
                 for person in self.people:
                     person.update(dt)
 
             # Draw
-            if self._stats_surf is not None:
-                # Stats screen replaces the normal game scene
+            if self.state == GameState.MENU:
+                self._draw_menu()
+            elif self._stats_surf is not None:
+                # Stats/fired screen replaces the normal game scene
                 self.screen.fill(BG_COLOR)
                 self.screen.blit(self._stats_surf, (0, 0))
+                self.screen.blit(self._scanline_surf, (0, 0))
+                self.screen.blit(self._vignette_surf, (0, 0))
+                self._draw_noise()
             else:
                 if self._bg:
                     self.screen.blit(self._bg, (0, 0))
@@ -640,12 +866,10 @@ class Game:
                 # Dispatch panel (before CCTV overlays)
                 self._draw_panel()
 
-            # CCTV post-processing (scanlines/vignette/noise apply everywhere
-            # for the surveillance aesthetic; timestamp hidden on stats screen)
-            self.screen.blit(self._scanline_surf, (0, 0))
-            self.screen.blit(self._vignette_surf, (0, 0))
-            self._draw_noise()
-            if self._stats_surf is None:
+                # CCTV post-processing
+                self.screen.blit(self._scanline_surf, (0, 0))
+                self.screen.blit(self._vignette_surf, (0, 0))
+                self._draw_noise()
                 self._draw_timestamp()
 
             pygame.display.flip()

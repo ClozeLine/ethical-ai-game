@@ -47,10 +47,10 @@ PERSON_TEMPLATE_DATA = [
     {"name": "ROBIN SAGE", "age": "36", "clothing": "Blue coat", "mood": "Calm", "behavior": "Walking"},
     {"name": "CASEY WARD", "age": "42", "clothing": "Green parka", "mood": "Distracted", "behavior": "Texting"},
     {"name": "RIVER BANKS", "age": "24", "clothing": "Yellow vest", "mood": "Cheerful", "behavior": "Browsing"},
-    {"name": "MORGAN LAKE", "age": "38", "clothing": "Grey sweatshirt", "mood": "Tense", "behavior": "Standing still"},
+    {"name": "MORGAN LAKE", "age": "38", "clothing": "Grey sweatshirt", "mood": "Tense", "behavior": "Walking slowly"},
     {"name": "SAM BRIDGE", "age": "29", "clothing": "Purple jacket", "mood": "Agitated", "behavior": "Arguing"},
     {"name": "CASS MOORE", "age": "44", "clothing": "Orange hoodie", "mood": "Focused", "behavior": "Watching"},
-    {"name": "AVERY MARSH", "age": "33", "clothing": "White shirt", "mood": "Relaxed", "behavior": "Sitting"},
+    {"name": "AVERY MARSH", "age": "33", "clothing": "White shirt", "mood": "Relaxed", "behavior": "Strolling"},
     {"name": "JORDAN COLE", "age": "26", "clothing": "Cyan tracksuit", "mood": "Restless", "behavior": "Fidgeting"},
 ]
 
@@ -119,7 +119,7 @@ TIMER_TEXT_COLOR = (0, 200, 0)
 NUM_PEOPLE = 10
 
 # Briefing
-BRIEFING_DURATION = 3.0
+BRIEFING_DURATION = 5.0
 
 # Flag outline
 FLAG_OUTLINE_COLOR = (220, 40, 40)
@@ -144,3 +144,9 @@ STATS_PROMPT_COLOR = (0, 120, 0)
 FIRED_HEADER_COLOR = (200, 40, 40)
 FIRED_TEXT_COLOR = (180, 60, 60)
 FIRED_DIM_COLOR = (140, 50, 50)
+
+# Menu
+MENU_BLUR_FACTOR = 8
+MENU_OVERLAY_ALPHA = 140
+MENU_BUTTON_COLOR = (0, 200, 0)
+MENU_TITLE_FONT_SIZE = 40

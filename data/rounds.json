@@ -2,17 +2,38 @@
   "rounds": [
     {
       "round_number": 1,
+      "timer_seconds": 30,
+      "description": "Suspect aged **early 30s to early 40s**, **nervous** or **distracted**, **pacing** or **texting**",
+      "people": [
+        "ROBIN SAGE",
+        "CASEY WARD",
+        "DREW VALE"
+      ],
+      "plausible_names": [
+        "DREW VALE",
+        "CASEY WARD"
+      ],
+      "reveals": {
+        "ROBIN SAGE": "Calmly walking home after a long shift — clearly not matching the dispatch",
+        "CASEY WARD": "Texting their kid's school about a pick-up time",
+        "DREW VALE": "Was checking directions to a job interview on their phone"
+      }
+    },
+    {
+      "round_number": 2,
       "timer_seconds": 15,
-      "description": "Suspect in dark clothing, appears uneasy",
+      "description": "Suspect aged **late 20s to late 30s**, **nervous** or **tense**, **pacing** or **walking slowly**. **Dark** clothing",
       "people": [
         "DREW VALE",
         "RILEY STONE",
         "ROBIN SAGE",
         "CASEY WARD",
-        "MORGAN LAKE"
+        "MORGAN LAKE",
+        "SAM BRIDGE"
       ],
       "plausible_names": [
         "DREW VALE",
+        "RILEY STONE",
         "MORGAN LAKE"
       ],
       "reveals": {
@@ -20,15 +41,17 @@
         "RILEY STONE": "Waiting for a friend outside the coffee shop",
         "ROBIN SAGE": "Walking home after finishing a shift at the hospital",
         "CASEY WARD": "Texting their kid's school about a pick-up time",
-        "MORGAN LAKE": "Standing outside trying to calm down after a stressful call"
+        "MORGAN LAKE": "Walking around outside trying to calm down after a stressful call",
+        "SAM BRIDGE": "On the phone sorting out a billing dispute with their landlord"
       }
     },
     {
-      "round_number": 2,
+      "round_number": 3,
       "timer_seconds": 12,
-      "description": "Individual seen acting nervous near the shops, mid-30s",
+      "description": "Suspect aged **26 to 31**, **agitated** or **restless**, **arguing** or **fidgeting**. Wearing a **jacket** or **tracksuit**",
       "people": [
         "DREW VALE",
+        "RILEY STONE",
         "ROBIN SAGE",
         "MORGAN LAKE",
         "SAM BRIDGE",
@@ -36,22 +59,24 @@
         "JORDAN COLE"
       ],
       "plausible_names": [
+        "SAM BRIDGE",
         "DREW VALE",
-        "ROBIN SAGE"
+        "JORDAN COLE"
       ],
       "reveals": {
         "DREW VALE": "Nervously rehearsing lines for a community theatre audition",
+        "RILEY STONE": "Waiting for a friend who's running late to meet up",
         "ROBIN SAGE": "Looking for a lost wallet they dropped earlier",
         "MORGAN LAKE": "Waiting for a pharmacy prescription to be filled",
         "SAM BRIDGE": "Having a disagreement with a friend over the phone",
-        "AVERY MARSH": "Resting on a bench after a long morning walk",
+        "AVERY MARSH": "Taking a slow stroll after a long morning",
         "JORDAN COLE": "Pacing while listening to a podcast"
       }
     },
     {
-      "round_number": 3,
+      "round_number": 4,
       "timer_seconds": 9,
-      "description": "Person of interest appears on edge, possibly wearing dark colors",
+      "description": "Suspect aged **late 20s to early 30s**, **anxious** or **agitated**, **looking around** or **arguing**. Wearing a **red** or **dark** jacket or hoodie",
       "people": [
         "DREW VALE",
         "RILEY STONE",
@@ -59,12 +84,14 @@
         "CASEY WARD",
         "MORGAN LAKE",
         "SAM BRIDGE",
-        "CASS MOORE"
+        "CASS MOORE",
+        "JORDAN COLE"
       ],
       "plausible_names": [
-        "DREW VALE",
         "RILEY STONE",
-        "MORGAN LAKE"
+        "DREW VALE",
+        "SAM BRIDGE",
+        "JORDAN COLE"
       ],
       "reveals": {
         "DREW VALE": "Running late to meet a friend and anxiously checking the time",
@@ -73,48 +100,19 @@
         "CASEY WARD": "Distracted by a work email that just came in",
         "MORGAN LAKE": "Tense after nearly being hit by a cyclist",
         "SAM BRIDGE": "Arguing with a parking attendant about an expired meter",
-        "CASS MOORE": "Watching a street performer across the road"
+        "CASS MOORE": "Watching a street performer across the road",
+        "JORDAN COLE": "Fidgeting while waiting for a bus that's running late"
       }
     },
     {
-      "round_number": 4,
+      "round_number": 5,
       "timer_seconds": 6,
-      "description": "Suspect avoiding contact, described as alert and watchful",
+      "description": "Suspect aged **late 30s to mid 40s**, **tense** or **focused**, **walking slowly** or **watching**. Wearing **grey** or **orange**",
       "people": [
         "DREW VALE",
         "RILEY STONE",
         "ROBIN SAGE",
         "CASEY WARD",
-        "MORGAN LAKE",
-        "SAM BRIDGE",
-        "CASS MOORE",
-        "JORDAN COLE"
-      ],
-      "plausible_names": [
-        "DREW VALE",
-        "MORGAN LAKE",
-        "CASS MOORE",
-        "JORDAN COLE"
-      ],
-      "reveals": {
-        "DREW VALE": "Avoiding eye contact because they're on a private phone call",
-        "RILEY STONE": "Anxiously waiting for medical test results on their phone",
-        "ROBIN SAGE": "Calmly window-shopping during a lunch break",
-        "CASEY WARD": "Absorbed in reading the news on their phone",
-        "MORGAN LAKE": "Alertly watching their parked car after hearing the alarm go off",
-        "SAM BRIDGE": "Frustrated after getting a parking ticket",
-        "CASS MOORE": "Watchfully keeping an eye on their dog tied up outside a shop",
-        "JORDAN COLE": "Restlessly waiting for a late delivery driver"
-      }
-    },
-    {
-      "round_number": 5,
-      "timer_seconds": 4,
-      "description": "Reports of suspicious activity in the area, flag anyone acting unusual",
-      "people": [
-        "DREW VALE",
-        "RILEY STONE",
-        "ROBIN SAGE",
         "RIVER BANKS",
         "MORGAN LAKE",
         "SAM BRIDGE",
@@ -122,21 +120,92 @@
         "JORDAN COLE"
       ],
       "plausible_names": [
+        "MORGAN LAKE",
+        "CASS MOORE",
+        "CASEY WARD",
+        "ROBIN SAGE"
+      ],
+      "reveals": {
+        "DREW VALE": "Avoiding eye contact because they're on a private phone call",
+        "RILEY STONE": "Anxiously waiting for medical test results on their phone",
+        "ROBIN SAGE": "Calmly window-shopping during a lunch break",
+        "CASEY WARD": "Absorbed in reading the news on their phone",
+        "RIVER BANKS": "Happily window-shopping during a day off",
+        "MORGAN LAKE": "Alertly watching their parked car after hearing the alarm go off",
+        "SAM BRIDGE": "Frustrated after getting a parking ticket",
+        "CASS MOORE": "Keeping an eye on their dog tied up outside a shop",
+        "JORDAN COLE": "Restlessly waiting for a late delivery driver"
+      }
+    },
+    {
+      "round_number": 6,
+      "timer_seconds": 4,
+      "description": "Suspect aged **mid to late 20s**, **restless** or **agitated**, **fidgeting** or **arguing**. Wearing **bright colours**",
+      "people": [
         "DREW VALE",
         "RILEY STONE",
+        "ROBIN SAGE",
+        "CASEY WARD",
+        "RIVER BANKS",
         "MORGAN LAKE",
         "SAM BRIDGE",
+        "CASS MOORE",
+        "AVERY MARSH",
         "JORDAN COLE"
+      ],
+      "plausible_names": [
+        "JORDAN COLE",
+        "RILEY STONE",
+        "SAM BRIDGE",
+        "RIVER BANKS"
       ],
       "reveals": {
         "DREW VALE": "Pacing while working up the courage to enter a dentist appointment",
         "RILEY STONE": "Looking around for their ride-share that keeps circling the block",
         "ROBIN SAGE": "Taking a calm evening stroll after dinner",
+        "CASEY WARD": "Texting a colleague about covering tomorrow's shift",
         "RIVER BANKS": "Cheerfully browsing a street market stall",
-        "MORGAN LAKE": "Standing still, processing difficult news from a family member",
+        "MORGAN LAKE": "Walking slowly, processing difficult news from a family member",
         "SAM BRIDGE": "Venting to a friend about a rough day at work",
         "CASS MOORE": "Focused on photographing architecture for a college project",
+        "AVERY MARSH": "Strolling through the area enjoying the afternoon sun",
         "JORDAN COLE": "Fidgeting while trying to decide what to order from a food truck"
+      }
+    },
+    {
+      "round_number": 7,
+      "timer_seconds": 2,
+      "description": "Suspect aged **mid 20s to late 30s**, **on edge**, wearing a **jacket** or **hoodie**",
+      "people": [
+        "DREW VALE",
+        "RILEY STONE",
+        "ROBIN SAGE",
+        "CASEY WARD",
+        "RIVER BANKS",
+        "MORGAN LAKE",
+        "SAM BRIDGE",
+        "CASS MOORE",
+        "AVERY MARSH",
+        "JORDAN COLE"
+      ],
+      "plausible_names": [
+        "DREW VALE",
+        "RILEY STONE",
+        "SAM BRIDGE",
+        "MORGAN LAKE",
+        "CASS MOORE"
+      ],
+      "reveals": {
+        "DREW VALE": "Heading to a late-night study session at the library",
+        "RILEY STONE": "Walking to meet a date at the restaurant around the corner",
+        "ROBIN SAGE": "On a calm walk home after visiting a friend",
+        "CASEY WARD": "Picking up groceries on the way home from work",
+        "RIVER BANKS": "Browsing for a birthday gift at a nearby shop",
+        "MORGAN LAKE": "Trying to find where they parked earlier this morning",
+        "SAM BRIDGE": "Hurrying to return a borrowed book before the library closes",
+        "CASS MOORE": "Keeping an eye out for a friend who's running late",
+        "AVERY MARSH": "Enjoying a quiet evening walk through the neighbourhood",
+        "JORDAN COLE": "Listening to music and not paying attention to anything"
       }
     }
   ]
